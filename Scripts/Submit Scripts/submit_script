@@ -1,0 +1,18 @@
+#!/bin/bash
+###SBATCH --mail-user=s144109@student.dtu.dk
+###SBATCH --mail-type=ALL
+#SBATCH -N 2
+#SBATCH --ntasks-per-node=40
+#SBATCH -p xeon40
+#SBATCH --time=50:00:00
+###SBATCH --mem=4G     # 4 GB RAM per node
+#SBATCH -o slurm.%j.out
+#SBATCH -e err
+#SBATCH --job-name=temp
+
+module purge
+module load intel
+
+python run_vasp.py
+
+
