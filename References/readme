@@ -1,1 +1,7 @@
+Reference states used in the calculation of adsorption energies.
 
+- Constants.py Contains thermodynamic quantities used in all adsorption energy calculations
+
+- references.db Contains reference slab used for calculating adsorption energies
+
+- molecules.db Contains water and hydrogen energies
