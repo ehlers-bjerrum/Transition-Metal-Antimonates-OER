@@ -1,1 +1,11 @@
+Some of the scripts used in writing my masters thesis.
 
+- GPpredictor.py Trains a Gaussian Processes regression routine on data from an SQL-Lite database if the database
+is configured correctly.
+
+- checkStability.py Checks the stability of a coverage.
+
+- generateCoverage.py Generates a particular surface coverage, as specified by an input string
+
+- calcAdsorptionEnergy.py Calculates the adsorption energy using the constants in constants.py and the energies of the reference slabs
+in references.db
