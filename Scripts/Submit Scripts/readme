@@ -1,2 +1,6 @@
 Scripts used to submit calculations to the Niflheim computer cluster DTU physics.
 The scripts are set up to run VASP.
+
+- submit_script Submits the calculation to slurm
+
+- run_vasp.py is executed on the node and solves the electronic structure problem using VASP.
