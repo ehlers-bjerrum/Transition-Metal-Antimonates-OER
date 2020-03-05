@@ -1,0 +1,19 @@
+### PATHS ###
+
+DBPATH=/home/cat/s144109/dataProcessing/NiSb2O6/databases/search.db
+POSPATH=/home/cat/s144109/dataProcessing/NiSb2O6/info/positions
+RPATH=/home/cat/s144109/dataProcessing/references/references.db
+
+JOBPATH=/home/cat/s144109/dataProcessing/NiSb2O6/surfacePourbaix/jobs/
+TARGETPATH=/home/cat/s144109/calc/2020/january/10/NiSb2O6/110/training/
+SLABPATH=/home/cat/s144109/calc/2020/january/10/NiSb2O6/110/training/O3A,O3B,O5,O7,O9A,O9B/CONTCARBLANKCONSTRAINED
+JOBSCRIPTS=/home/cat/s144109/dataProcessing/scripts/jobsScripts/
+WORKFOLDER=/home/cat/s144109/dataProcessing/NiSb2O6/surfacePourbaix/
+
+### CALCULATION SETUP ###
+
+RUN:FALSE
+ISIF:2
+ENCUT:650
+KPTS:(3,3,1)
+MO:FM
