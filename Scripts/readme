@@ -6,7 +6,9 @@ is configured correctly.
 - checkStability.py Checks the stability of a coverage.
 
 - generateCoverage.py Generates a particular surface coverage, as specified by an input string and a config file. The config
-  file must contain a reference to a positions file containing coordinates for the adsorption sites
+  file (configuration.txt) must contain a reference to a positions file containing coordinates for the adsorption sites 
 
 - calcAdsorptionEnergy.py Calculates the adsorption energy using the constants in constants.py and the energies of the reference slabs
 in references.db
+
+- main.py and createScripts.sh form the loop in Figure 3.13 together with last line in run_vasp.py
