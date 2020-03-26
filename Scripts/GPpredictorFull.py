@@ -29,7 +29,7 @@ varH2O = 2 + 2*r*1j
 varVac = 3
 
 
-def GPpredictor(voltage):
+def GPpredictor(voltage,state=False,conf=False):
   ## Predicts possible groundstate coverages for the facet under study.
   # INPUT: Applied bias vs RHE.
   # OPTIONAL INPUT: conf, input a possible surface configuration to get the predicted energy
@@ -59,6 +59,15 @@ def GPpredictor(voltage):
   ## Generate possible states. A state is configuration (coverage)  encoded using the variable encoding.
   X = getPossibleStates()
 
+  ## Predict the energy of a given surface configuration (coverage)
+  if conf is not False:
+    return predictEnergy(getState(conf.split(',')),model,voltage)
+  
+  ## Predict the energy of a given state
+  if state is not False:
+    return predictEnergy(state,model,voltage)
+  
+
   ## Get training states
   XD = getDoneCalc(dbs)
   ## Remove the training states from the trial states X
@@ -74,12 +83,74 @@ def GPpredictor(voltage):
 
   
 
+def getBestActivity(dbs,material,voltage,model):
+  # Predicts the maximum activity of the training data states. We define the activity as
+  # ACTIVITY = - (FORMATION_ENERGY + ACTIVATION_ENERGY)
+  # A high activity implies a low formation energy and low activation energy for OO coupling
+  [OS,I,R] = loadDatabases()
+  [conf_full,dG_Ad_full,Y_full,X_full] = getTrainingData(dbs,R,material)
+  
+   
+  # For each coverage, get the most active site (Occupied by Oxide) 
+  activity = []
+  activityError = []
+  site = []
+  for state in X_full:
+    [A,Asig] = predictActivity(state,model,voltage)
+    minIndex = A.index(min(A))
+    activity.append(A[minIndex])
+    activityError.append(Asig[minIndex])
+    site.append(minIndex)
+  
+
+  # Sort the coverages according to their most active site
+  [[VASPState,VASPError,site],VASPActivity] = sortCandidates([conf_full,activityError,site],activity)
+  #print('Most active surfaces')
+  #for j in range(0,20):
+  #  print(VASPState[j])
+  #  print(VASPActivity[j])
+  #  print(VASPError[j])
+  #  print(site[j])
+
+  # Return the highest activity of the training set
+  bestActivity = VASPActivity[0]
+  error = VASPError[0]
+
+  return [bestActivity,error]  
+
+def predictActivity(state,model,voltage):
+  # Get the activity of all sites for a given state 
+  getBarrier = lambda v,d: -0.58*v-0.48*d+2.41 # Barrier calculation for OOH formation see C. Dickens and J. NÃrskov, J. Phys. Chem. C, volume 123, number 31, pages 18960-18977, 2019., DOI: 10/1021/acs.jpcc.9b03830
+
+  [G,sig] = predictEnergy(state,model,voltage) # Predict the energy of the state
+  A = []
+  Asig = []
+  for j in range(0,len(state)):
+    tempState = list(state)
+      
+    # Calculate the activity if the site has an oxide (a possible active site for OOH formation)  
+    if tempState[j] == varO:
+      tempState[j] = varOH
+      [GTemp,sigTemp] = predictEnergy(tempState,model,voltage)
+      desc = G-GTemp + voltage
+      barrier = getBarrier(voltage,desc)
+      activity = G + barrier
+      error = np.sqrt(0.48**2*(sigTemp**2 + sig**2)+sigTemp**2)
+
+      A.append(activity)
+      Asig.append(error)
+    
+  return [A,Asig]
+
 def predictCandidates(model,XR,dbs,material,voltage):
   ## Selects states that should be submitted for a VASP calculation
   # Compares predicted formation energies with the most stable state found so far, and selects a state for calculation if the predicted formation energy of that state is within 2 standard deviations from the most stable state.
+  # Compares predicted activites with the best activity of the training data, and selects states for VASP calculation if the predicted activity is within 1 standard deviation from the most active site
   
   ## Gets the most stable state from the training set
   minEnergyVASP = getMinimumEnergy(dbs,material,voltage)
+  ## Gets the most active state from the training set
+  [BestActivityVASP,ActivityErrorVASP] = getBestActivity(dbs,material,voltage,model)
 
   candidates = []
   dG_T = []
@@ -91,6 +162,13 @@ def predictCandidates(model,XR,dbs,material,voltage):
       candidates.append(getConf(cand))
       dG_T.append(dG)
       S.append(sig)
+      continue
+    for j in range(0,len(A)): # Selects active states
+      if (A[j]-BestActivityVASP) < np.sqrt(Asig[j]**2 + ActivityErrorVASP**2):
+        candidates.append(getConf(cand))
+        dG_T.append(dG)
+        S.append(sig)
+        break
 
   return [candidates,dG_T,S]
 
